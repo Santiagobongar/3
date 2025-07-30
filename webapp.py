@@ -1,4 +1,9 @@
 # webapp.py - Price Finder USA con Búsqueda por Imagen
+
+# ==============================================================================
+# SECCIÓN 1: IMPORTS Y CONFIGURACIÓN INICIAL
+# ==============================================================================
+
 from flask import Flask, request, jsonify, session, redirect, url_for, render_template_string, flash
 import requests
 import os
@@ -30,6 +35,10 @@ except ImportError:
     GEMINI_AVAILABLE = False
     print("⚠️ Google Generative AI no disponible - instalar con: pip install google-generativeai")
 
+# ==============================================================================
+# SECCIÓN 2: CONFIGURACIÓN DE FLASK Y GEMINI
+# ==============================================================================
+
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'fallback-key-change-in-production')
 app.config['PERMANENT_SESSION_LIFETIME'] = 1800
@@ -53,6 +62,10 @@ elif GEMINI_AVAILABLE and not GEMINI_API_KEY:
 else:
     print("⚠️ Gemini no está disponible - búsqueda por imagen deshabilitada")
     GEMINI_READY = False
+
+# ==============================================================================
+# SECCIÓN 3: CLASE FIREBASE AUTH
+# ==============================================================================
 
 # Firebase Auth Class
 class FirebaseAuth:
@@ -150,7 +163,7 @@ def login_required(f):
     return decorated_function
 
 # ==============================================================================
-# FUNCIONES DE BÚSQUEDA POR IMAGEN
+# SECCIÓN 4: FUNCIONES DE BÚSQUEDA POR IMAGEN
 # ==============================================================================
 
 def analyze_image_with_gemini(image_content):
@@ -215,6 +228,10 @@ def validate_image(image_content):
         return True
     except:
         return False
+
+# ==============================================================================
+# SECCIÓN 5: CLASE PRICE FINDER
+# ==============================================================================
 
 # Price Finder Class - MODIFICADO para búsqueda por imagen
 class PriceFinder:
@@ -453,6 +470,10 @@ class PriceFinder:
 # Instancia global de PriceFinder
 price_finder = PriceFinder()
 
+# ==============================================================================
+# SECCIÓN 6: TEMPLATES HTML
+# ==============================================================================
+
 # Templates
 def render_page(title, content):
     template = '''<!DOCTYPE html>
@@ -560,6 +581,10 @@ AUTH_LOGIN_TEMPLATE = """
 </html>
 """
 
+# ==============================================================================
+# SECCIÓN 7: RUTAS DE AUTENTICACIÓN
+# ==============================================================================
+
 # Routes
 @app.route('/auth/login-page')
 def auth_login_page():
@@ -598,6 +623,10 @@ def index():
     if not firebase_auth.is_user_logged_in():
         return redirect(url_for('auth_login_page'))
     return redirect(url_for('search_page'))
+
+# ==============================================================================
+# SECCIÓN 8: RUTA DE BÚSQUEDA PRINCIPAL
+# ==============================================================================
 
 @app.route('/search')
 @login_required
@@ -754,6 +783,10 @@ def search_page():
     
     return render_template_string(render_page('Busqueda', content))
 
+# ==============================================================================
+# SECCIÓN 9: API DE BÚSQUEDA
+# ==============================================================================
+
 @app.route('/api/search', methods=['POST'])
 @login_required
 def api_search():
@@ -812,6 +845,10 @@ def api_search():
             return jsonify({'success': True, 'products': fallback, 'total': len(fallback)})
         except:
             return jsonify({'success': False, 'error': 'Error interno del servidor'}), 500
+
+# ==============================================================================
+# SECCIÓN 10: PÁGINA DE RESULTADOS
+# ==============================================================================
 
 @app.route('/results')
 @login_required
@@ -873,8 +910,8 @@ def results_page():
                 <div style="background: #e8f5e8; border: 1px solid #4caf50; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                     <h3 style="color: #2e7d32; margin-bottom: 8px;">Resultados de búsqueda (''' + search_type_text + ''')</h3>
                     <p><strong>''' + str(len(products)) + ''' productos encontrados</strong></p>
-                    <p><strong>Mejor precio: $''' + f'{min_price:.2f}' + '''</strong></p>
-                    <p><strong>Precio promedio: $''' + f'{avg_price:.2f}' + '''</strong></p>
+                    <p><strong>Mejor precio: '' + f'{min_price:.2f}' + '''</strong></p>
+                    <p><strong>Precio promedio: '' + f'{avg_price:.2f}' + '''</strong></p>
                 </div>'''
         
         content = '''
@@ -899,6 +936,10 @@ def results_page():
         print(f"Results page error: {e}")
         flash('Error al mostrar resultados.', 'danger')
         return redirect(url_for('search_page'))
+
+# ==============================================================================
+# SECCIÓN 11: API HEALTH CHECK Y MIDDLEWARE
+# ==============================================================================
 
 @app.route('/api/health')
 def health_check():
@@ -936,6 +977,10 @@ def after_request(response):
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     return response
+
+# ==============================================================================
+# SECCIÓN 12: MANEJO DE ERRORES Y MAIN
+# ==============================================================================
 
 # Error handlers
 @app.errorhandler(404)
