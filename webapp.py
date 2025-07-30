@@ -1,9 +1,8 @@
-# webapp.py - Price Finder USA con Búsqueda por Imagen
-
 # ==============================================================================
 # SECCIÓN 1: IMPORTS Y CONFIGURACIÓN INICIAL
 # ==============================================================================
 
+# webapp.py - Price Finder USA con Búsqueda por Imagen
 from flask import Flask, request, jsonify, session, redirect, url_for, render_template_string, flash
 import requests
 import os
